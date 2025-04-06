@@ -1,13 +1,24 @@
 import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Home from "./pages/Home";
 
-const App = () => {
+function App() {
   return (
     <>
-      <div className="bg-green-500 text-white text-2xl p-5">
-        Tailwind CSS is working!
-      </div>
+      <Router>
+        <Navbar />
+        <Home />
+        <Routes>
+          {/* <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/product" element={<Products />} />
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />}></Route> */}
+        </Routes>
+      </Router>
     </>
   );
-};
+}
 
 export default App;
