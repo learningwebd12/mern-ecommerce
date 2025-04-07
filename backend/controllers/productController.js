@@ -1,17 +1,21 @@
 const Product = require("../models/Product");
 
-// Create a new product
 const createProduct = async (req, res) => {
   const { name, price, description, category, countInStock } = req.body;
+  const image = req.file ? `/uploads/${req.file.filename}` : ""; // Image path from multer
 
   try {
+    if (!req.file) {
+      return res.status(400).json({ message: "Image file is required" });
+    }
+
     const product = new Product({
       name,
       price,
       description,
-      category, // should be category _id
+      category,
       countInStock,
-      image: req.body.image || "",
+      image, // Save the image URL
     });
 
     await product.save();
@@ -21,15 +25,15 @@ const createProduct = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
 // Get all products (with category populated)
 const getProducts = async (req, res) => {
   try {
-    const products = await Product.find().populate("category", "name");
-    res.json(products);
+    const products = await Product.find().populate("category");
+    res.json({ products });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });

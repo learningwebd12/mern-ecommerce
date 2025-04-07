@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
   addToCart,
-  updateCart, // ✅ Make sure this is being imported
+  updateCart,
   getCart,
   removeFromCart,
 } = require("../controllers/cartController");
@@ -13,7 +13,7 @@ const protect = require("../middleware/authMiddleware");
 router.post("/add", protect, addToCart);
 
 // PUT /api/cart/update
-router.put("/update", protect, updateCart); // ✅ No parentheses
+router.put("/update", protect, updateCart);
 
 // GET /api/cart
 router.get("/", protect, getCart);

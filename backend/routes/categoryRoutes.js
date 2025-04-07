@@ -1,3 +1,4 @@
+// routes/categoryRoutes.js
 const express = require("express");
 const router = express.Router();
 const {
@@ -5,10 +6,7 @@ const {
   getCategories,
 } = require("../controllers/categoryController");
 
-// POST: Add category
 router.post("/", createCategory);
-
-// GET: Fetch all categories
-router.get("/", getCategories);
+router.get("/", getCategories); // Fetch all categories
 
 module.exports = router;

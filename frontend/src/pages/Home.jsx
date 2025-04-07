@@ -3,7 +3,7 @@ import React from "react";
 const Home = () => {
   return (
     <>
-      <div className="flex justify-between items-center p-5 w-full self-stretch ">
+      <div className="flex justify-between items-center py-8 px-15 w-full self-stretch ">
         <div className="flex justify-center w-[25%] bg-[#E0E0E0]">
           <img src="/images/image1.png" alt="Image1" />
         </div>
@@ -12,9 +12,9 @@ const Home = () => {
           <div className=" bg-[#E0E0E0] flex justify-center">
             <img src="/images/image3.png" alt="" />
           </div>
-          <div className="w-full items-center flex flex-col">
-            <h1 className="text-[5vw]">ULTIMATE</h1>
-            <h2 className="text-[5vw]">SALE</h2>
+          <div className="w-full items-center flex flex-col py-2">
+            <h1 className="text-[4vw]">ULTIMATE</h1>
+            <h2 className="text-[4vw]">SALE</h2>
             <p>New Collection</p>
             <button class="bg-indigo-500 hover:bg-fuchsia-500 px-8 p-3 rounded-sm text-cyan-50 cursor-pointer">
               Shop Now

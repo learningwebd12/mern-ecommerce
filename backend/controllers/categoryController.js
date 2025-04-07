@@ -19,11 +19,14 @@ const createCategory = async (req, res) => {
   }
 };
 
+
+
+
 // Get all categories
 const getCategories = async (req, res) => {
   try {
     const categories = await Category.find();
-    res.json(categories);
+    res.json(categories); // Send all categories
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
