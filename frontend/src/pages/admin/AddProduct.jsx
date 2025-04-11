@@ -6,7 +6,7 @@ const AddProduct = () => {
     description: "",
     price: "",
     category: "",
-    countInStock: "", // Make sure this is initialized here
+    countInStock: "",
     image: null,
   });
   const [categories, setCategories] = useState([]);
@@ -44,7 +44,7 @@ const AddProduct = () => {
     formData.append("description", productData.description);
     formData.append("price", productData.price);
     formData.append("category", productData.category);
-    formData.append("countInStock", productData.countInStock); // Append countInStock
+    formData.append("countInStock", productData.countInStock);
     formData.append("image", productData.image);
 
     try {

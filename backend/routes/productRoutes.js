@@ -1,5 +1,6 @@
 const express = require("express");
-const router = express.Router(); // Define the router
+const router = express.Router();
+const upload = require("../config/multerconfig"); // Import multer config
 const {
   createProduct,
   getProducts,
@@ -7,7 +8,7 @@ const {
 } = require("../controllers/productController"); // Import controller functions
 
 // Route to create a product
-router.post("/", createProduct);
+router.post("/", upload.single("image"), createProduct); // Handle file upload before the controller
 
 // Route to get all products
 router.get("/", getProducts);

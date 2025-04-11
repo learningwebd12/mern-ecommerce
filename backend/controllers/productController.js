@@ -1,5 +1,6 @@
 const Product = require("../models/Product");
 
+// Create product
 const createProduct = async (req, res) => {
   const { name, price, description, category, countInStock } = req.body;
   const image = req.file ? `/uploads/${req.file.filename}` : ""; // Image path from multer
