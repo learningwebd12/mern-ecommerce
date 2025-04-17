@@ -1,7 +1,10 @@
-import React, { createContext, useState } from "react";
+/* eslint-disable react-refresh/only-export-components */
+import React, { createContext, useState, useContext } from "react";
 
+// Create the AuthContext
 export const AuthContext = createContext();
 
+// Define the AuthProvider component
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const token = localStorage.getItem("authToken");
@@ -9,6 +12,7 @@ export const AuthProvider = ({ children }) => {
     return token ? { token, ...(userData ? JSON.parse(userData) : {}) } : null;
   });
 
+  // Login function to set user data and token
   const login = (userData) => {
     localStorage.setItem("authToken", userData.token);
     localStorage.setItem(
@@ -21,12 +25,14 @@ export const AuthProvider = ({ children }) => {
     setUser({ ...userData });
   };
 
+  // Logout function to remove user data and token
   const logout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("userData");
     setUser(null);
   };
 
+  // Check if user is authenticated
   const isAuthenticated = () => !!user;
 
   return (
@@ -36,6 +42,5 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// ✅ Add and export this hook
-import { useContext } from "react";
+// Custom hook to access AuthContext
 export const useAuth = () => useContext(AuthContext);

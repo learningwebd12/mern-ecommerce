@@ -20,6 +20,8 @@ import Product from "./components/SingleProduct";
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext"; // Import AuthProvider
 import Checkout from "./pages/Checkout";
+import OrderSuccess from "./pages/OrderSuccess";
+import MyOrders from "./pages/MyOrders";
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -40,8 +42,12 @@ const Layout = ({ children }) => {
 function App() {
   return (
     <AuthProvider>
+      {" "}
+      {/* Wrap the AuthProvider around Router to access auth context */}
       <Router>
         <CartProvider>
+          {" "}
+          {/* Wrap CartProvider around the layout */}
           <Layout>
             <Routes>
               {/* Public Routes */}
@@ -52,7 +58,9 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/product/:id" element={<Product />} />
-              <Route path="/Checkout" element={<Checkout />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/order-success" element={<OrderSuccess />} />
+              <Route path="/my-orders" element={<MyOrders />} />
 
               {/* Admin Routes */}
               <Route path="/admin/dashboard" element={<Dashboard />} />

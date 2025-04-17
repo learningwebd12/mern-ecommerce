@@ -8,15 +8,14 @@ const orderSchema = new mongoose.Schema({
   },
   items: [
     {
+      name: { type: String, required: true },
       productId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Product",
         required: true,
       },
       quantity: { type: Number, required: true },
-      price: { type: Number, required: true }, // Price at the time of order
-      name: { type: String, required: true }, // Name of the product
-      image: { type: String }, // Optional product image URL
+      price: { type: Number, required: true },
     },
   ],
   totalAmount: { type: Number, required: true },
@@ -47,8 +46,5 @@ const orderSchema = new mongoose.Schema({
   },
   createdAt: { type: Date, default: Date.now },
 });
-
-orderSchema.index({ userId: 1 });
-orderSchema.index({ status: 1 });
 
 module.exports = mongoose.model("Order", orderSchema);

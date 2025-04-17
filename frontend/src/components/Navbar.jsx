@@ -43,6 +43,15 @@ const Navbar = () => {
         ) : (
           <>
             <span>Welcome, {user.name}</span>
+            {user && (
+              <Link
+                to="/my-orders"
+                className="mx-2 text-blue-600 hover:underline"
+              >
+                My Orders
+              </Link>
+            )}
+
             <button onClick={logout} className="text-red-500">
               Logout
             </button>
