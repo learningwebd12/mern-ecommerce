@@ -10,8 +10,10 @@ const protect = async (req, res, next) => {
     req.headers.authorization.startsWith("Bearer")
   ) {
     try {
-      token = req.headers.authorization.split(" ")[1]; // Extract token
+      // Extract the token from the "Authorization" header
+      token = req.headers.authorization.split(" ")[1];
 
+      // If no token is found
       if (!token) {
         return res.status(401).json({ message: "No token provided" });
       }
@@ -19,13 +21,18 @@ const protect = async (req, res, next) => {
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Find the user from the database using the decoded userId
+      // Check if the decoded token has a userId
+      if (!decoded || !decoded.userId) {
+        return res.status(401).json({ message: "Invalid token" });
+      }
+
+      // Find the user in the database using the decoded userId
       const user = await User.findById(decoded.userId).select("-password");
       if (!user) {
         return res.status(401).json({ message: "User not found" });
       }
 
-      // Attach user to the request object
+      // Attach the user to the request object so it can be accessed in the next middleware/route handler
       req.user = user;
       next(); // Proceed to the next middleware or route handler
     } catch (error) {

@@ -1,31 +1,33 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, { createContext, useState } from "react";
 
-// Create context
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const storedToken = sessionStorage.getItem("authToken");
-    if (storedToken) {
-      setUser({ token: storedToken });
-    }
-  }, []);
+  const [user, setUser] = useState(() => {
+    const token = localStorage.getItem("authToken");
+    const userData = localStorage.getItem("userData");
+    return token ? { token, ...(userData ? JSON.parse(userData) : {}) } : null;
+  });
 
   const login = (userData) => {
-    setUser(userData);
-    sessionStorage.setItem("authToken", userData.token);
+    localStorage.setItem("authToken", userData.token);
+    localStorage.setItem(
+      "userData",
+      JSON.stringify({
+        name: userData.name,
+        _id: userData._id,
+      })
+    );
+    setUser({ ...userData });
   };
 
   const logout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userData");
     setUser(null);
-    sessionStorage.removeItem("authToken");
   };
 
-  const isAuthenticated = () => {
-    return user !== null;
-  };
+  const isAuthenticated = () => !!user;
 
   return (
     <AuthContext.Provider value={{ user, login, logout, isAuthenticated }}>
@@ -34,7 +36,6 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Custom hook to use the context
+// ✅ Add and export this hook
+import { useContext } from "react";
 export const useAuth = () => useContext(AuthContext);
-
-export { AuthContext };

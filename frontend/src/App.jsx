@@ -19,6 +19,7 @@ import Dashboard from "./pages/Dashboard";
 import Product from "./components/SingleProduct";
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext"; // Import AuthProvider
+import Checkout from "./pages/Checkout";
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -51,6 +52,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/product/:id" element={<Product />} />
+              <Route path="/Checkout" element={<Checkout />} />
 
               {/* Admin Routes */}
               <Route path="/admin/dashboard" element={<Dashboard />} />

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom"; // Import Link for navigation
+import { Link } from "react-router-dom";
+import Banner from "./Banner";
 
 const AllProducts = () => {
   const [products, setProducts] = useState([]);
@@ -31,6 +32,10 @@ const AllProducts = () => {
 
   return (
     <div className="p-6">
+      <Banner
+        title="Product"
+        subtitle="At Fashion Brand Name, we believe that fashion is more than just clothing it's a powerful form of self-expression. "
+      />
       <h1 className="text-2xl font-bold mb-4">All Products</h1>
       <div className="grid grid-cols-3 gap-6">
         {products.map((product) => (

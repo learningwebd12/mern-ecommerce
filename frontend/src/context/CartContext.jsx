@@ -21,15 +21,13 @@ export const CartProvider = ({ children }) => {
         (item) => item._id === product._id
       );
       if (existingProductIndex >= 0) {
-        // If product already exists in cart, increase the quantity, but respect stock limit
         const updatedCart = [...prevCart];
         updatedCart[existingProductIndex].quantity = Math.min(
           updatedCart[existingProductIndex].quantity + quantity,
-          product.countInStock // Ensure it doesn't exceed stock
+          product.countInStock
         );
         return updatedCart;
       } else {
-        // If product doesn't exist in cart, add it with the given quantity
         return [
           ...prevCart,
           { ...product, quantity: Math.min(quantity, product.countInStock) },
@@ -38,26 +36,23 @@ export const CartProvider = ({ children }) => {
     });
   };
 
-  // Function to remove item from cart
   const removeFromCart = (productId) => {
     setCart((prevCart) => prevCart.filter((item) => item._id !== productId));
   };
 
-  // Function to increase quantity of a product in the cart
   const increaseQty = (productId, countInStock) => {
     setCart((prevCart) =>
       prevCart.map((item) =>
         item._id === productId
           ? {
               ...item,
-              quantity: Math.min(item.quantity + 1, countInStock), // Ensure it doesn't exceed stock
+              quantity: Math.min(item.quantity + 1, countInStock),
             }
           : item
       )
     );
   };
 
-  // Function to decrease quantity of a product in the cart
   const decreaseQty = (productId) => {
     setCart((prevCart) =>
       prevCart.map((item) =>
@@ -68,12 +63,6 @@ export const CartProvider = ({ children }) => {
     );
   };
 
-  // Check if user is authenticated (this can be a part of your auth context)
-  const isAuthenticated = () => {
-    // Example logic: If there's an auth token, consider the user authenticated
-    return localStorage.getItem("authToken") !== null;
-  };
-
   return (
     <CartContext.Provider
       value={{
@@ -82,7 +71,6 @@ export const CartProvider = ({ children }) => {
         removeFromCart,
         increaseQty,
         decreaseQty,
-        isAuthenticated,
       }}
     >
       {children}

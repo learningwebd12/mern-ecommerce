@@ -1,13 +1,13 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { AuthContext } from "../context/AuthContext";
 
 const Cart = () => {
-  const { cart, removeFromCart, increaseQty, decreaseQty, isAuthenticated } =
-    useCart();
+  const { cart, removeFromCart, increaseQty, decreaseQty } = useCart();
+  const { isAuthenticated } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Redirect to login if not authenticated
   useEffect(() => {
     if (!isAuthenticated()) {
       alert("Please log in to view your cart.");
@@ -15,13 +15,11 @@ const Cart = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  // Calculate total price
   const totalPrice = cart.reduce(
     (total, item) => total + item.price * item.quantity,
     0
   );
 
-  // If the cart is empty
   if (cart.length === 0) {
     return (
       <div className="p-6 text-center text-gray-600 text-xl">
@@ -68,8 +66,18 @@ const Cart = () => {
           </button>
         </div>
       ))}
+
       <div className="text-right mt-6 text-xl font-semibold">
         Total: ₹{totalPrice.toFixed(2)}
+      </div>
+
+      <div className="text-right mt-4">
+        <button
+          onClick={() => navigate("/checkout")}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          Proceed to Checkout
+        </button>
       </div>
     </div>
   );
