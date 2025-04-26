@@ -15,24 +15,23 @@ import Cart from "./pages/Cart";
 import AddProduct from "./pages/admin/AddProduct";
 import AddCategory from "./pages/admin/AddCategory";
 import AllProduct from "./components/AllProduct";
-import Dashboard from "./pages/Dashboard";
 import Product from "./components/SingleProduct";
-import { CartProvider } from "./context/CartContext";
-import { AuthProvider } from "./context/AuthContext"; // Import AuthProvider
 import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
 import MyOrders from "./pages/MyOrders";
+import AllOrders from "./pages/admin/AllOrders";
+import Dashboard from "./pages/Dashboard"; // Optional dashboard page
+import { CartProvider } from "./context/CartContext";
+import { AuthProvider } from "./context/AuthContext";
+import AdminLayout from "./components/AdminLayout"; // 👈 Import your admin layout
 
-const Layout = ({ children }) => {
+const PublicLayout = ({ children }) => {
   const location = useLocation();
-
-  // Check if the current path starts with /admin
   const isAdminRoute = location.pathname.startsWith("/admin");
 
   return (
     <>
-      {/* Conditionally render Navbar and Footer based on the route */}
-      {!isAdminRoute && <Navbar />} {/* Hide Navbar on admin routes */}
+      {!isAdminRoute && <Navbar />}
       {children}
       {!isAdminRoute && <Footer />}
     </>
@@ -42,13 +41,9 @@ const Layout = ({ children }) => {
 function App() {
   return (
     <AuthProvider>
-      {" "}
-      {/* Wrap the AuthProvider around Router to access auth context */}
       <Router>
         <CartProvider>
-          {" "}
-          {/* Wrap CartProvider around the layout */}
-          <Layout>
+          <PublicLayout>
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Home />} />
@@ -62,12 +57,17 @@ function App() {
               <Route path="/order-success" element={<OrderSuccess />} />
               <Route path="/my-orders" element={<MyOrders />} />
 
-              {/* Admin Routes */}
-              <Route path="/admin/dashboard" element={<Dashboard />} />
-              <Route path="/admin/add-product" element={<AddProduct />} />
-              <Route path="/admin/add-category" element={<AddCategory />} />
+              {/* Admin Layout Routes */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="add-product" element={<AddProduct />} />
+                <Route path="add-category" element={<AddCategory />} />
+                <Route path="all-orders" element={<AllOrders />} />
+
+                {/* Add more admin pages as needed */}
+              </Route>
             </Routes>
-          </Layout>
+          </PublicLayout>
         </CartProvider>
       </Router>
     </AuthProvider>

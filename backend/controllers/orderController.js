@@ -3,21 +3,30 @@ const Order = require("../models/Order");
 const createOrder = async (req, res) => {
   try {
     const { items, totalAmount, shippingAddress, paymentMethod } = req.body;
-    const userId = req.user._id; // Get the userId from the authenticated user
+    const userId = req.user._id;
 
-    // Create a new order
+    if (
+      !shippingAddress.fullName ||
+      !shippingAddress.email ||
+      !shippingAddress.phone ||
+      !shippingAddress.address ||
+      !shippingAddress.city ||
+      !shippingAddress.state ||
+      !shippingAddress.zipCode
+    ) {
+      return res.status(400).json({ message: "Incomplete shipping details" });
+    }
+
     const newOrder = new Order({
       userId,
       items,
       totalAmount,
       shippingAddress,
       paymentMethod,
-      status: "Pending", // default status
+      status: "Pending",
     });
 
-    // Save order to the database
     await newOrder.save();
-
     return res.status(201).json(newOrder);
   } catch (error) {
     console.error("Error placing order:", error);
@@ -37,4 +46,16 @@ const getUserOrders = async (req, res) => {
   }
 };
 
-module.exports = { createOrder, getUserOrders };
+const getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate("userId", "name email")
+      .sort({ createdAt: -1 });
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error("Error fetching all orders:", error);
+    res.status(500).json({ message: "Failed to fetch orders" });
+  }
+};
+
+module.exports = { createOrder, getUserOrders, getAllOrders };

@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 
 const AdminLayout = () => {
   const navigate = useNavigate();
-  const [showOrdersDropdown, setShowOrdersDropdown] = React.useState(false);
+  const [showOrdersDropdown, setShowOrdersDropdown] = useState(false);
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -26,7 +26,6 @@ const AdminLayout = () => {
             Add Category
           </button>
 
-          {/* View Orders Dropdown */}
           <div>
             <button
               onClick={() => setShowOrdersDropdown(!showOrdersDropdown)}
@@ -55,7 +54,7 @@ const AdminLayout = () => {
         </div>
       </div>
 
-      {/* Main content for each page */}
+      {/* Main Content */}
       <div className="flex-1 p-6 overflow-auto">
         <Outlet />
       </div>

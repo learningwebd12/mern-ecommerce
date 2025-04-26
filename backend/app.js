@@ -20,11 +20,12 @@ app.use(cors());
 // Set static folder for uploads
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 // Define Routes
-app.use("/api/cart", require("./routes/cartRoutes")); // Cart routes
+
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/products", require("./routes/productRoutes")); // Remove the upload middleware from here
 app.use("/api/categories", require("./routes/categoryRoutes"));
 app.use("/api/orders", require("./routes/orderRoutes"));
+app.use("/api/esewa", require("./routes/esewa"));
 
 const PORT = process.env.PORT || 5000;
 
