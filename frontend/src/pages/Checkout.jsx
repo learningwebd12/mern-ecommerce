@@ -89,16 +89,17 @@ const Checkout = () => {
           const { signature } = await signatureRes.json();
 
           // Create and submit eSewa payment form
-          const form = document.createElement("form");
-          form.method = "POST";
-          form.action = "https://rc-epay.esewa.com.np/api/epay/main/v2/form";
+          const paymentForm = document.createElement("form");
+          paymentForm.method = "POST";
+          paymentForm.action =
+            "https://rc-epay.esewa.com.np/api/epay/main/v2/form";
 
           const addField = (name, value) => {
             const input = document.createElement("input");
             input.type = "hidden";
             input.name = name;
             input.value = value;
-            form.appendChild(input);
+            paymentForm.appendChild(input);
           };
 
           addField("amount", totalAmount);
@@ -116,8 +117,8 @@ const Checkout = () => {
           );
           addField("signature", signature);
 
-          document.body.appendChild(form);
-          form.submit();
+          document.body.appendChild(paymentForm);
+          paymentForm.submit();
         } else {
           navigate("/order-success");
         }

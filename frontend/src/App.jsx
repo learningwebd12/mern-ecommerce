@@ -20,10 +20,10 @@ import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
 import MyOrders from "./pages/MyOrders";
 import AllOrders from "./pages/admin/AllOrders";
-import Dashboard from "./pages/Dashboard"; // Optional dashboard page
+import Dashboard from "./pages/Dashboard"; 
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
-import AdminLayout from "./components/AdminLayout"; // 👈 Import your admin layout
+import AdminLayout from "./components/AdminLayout"; 
 
 const PublicLayout = ({ children }) => {
   const location = useLocation();

@@ -25,7 +25,8 @@ app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/products", require("./routes/productRoutes")); // Remove the upload middleware from here
 app.use("/api/categories", require("./routes/categoryRoutes"));
 app.use("/api/orders", require("./routes/orderRoutes"));
-app.use("/api/esewa", require("./routes/esewa"));
+app.use("/api/esewa", require("./routes/esewaRoutes"));
+app.use("/api/payment", require("./routes/paymentRoutes"));
 
 const PORT = process.env.PORT || 5000;
 
