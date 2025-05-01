@@ -58,4 +58,30 @@ const getAllOrders = async (req, res) => {
   }
 };
 
-module.exports = { createOrder, getUserOrders, getAllOrders };
+// Update order status (Paid, Delivered, etc.)
+const updateOrderStatus = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { orderStatus, paymentStatus } = req.body; // Ensure this is the correct request body format
+
+    const order = await Order.findById(orderId);
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    // Update the fields based on the request
+    if (orderStatus) order.status = orderStatus;
+    if (paymentStatus) order.paymentStatus = paymentStatus;
+
+    await order.save();
+    res.status(200).json(order);
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    res.status(500).json({ message: "Failed to update order status" });
+  }
+};
+
+module.exports = {
+  createOrder,
+  getUserOrders,
+  getAllOrders,
+  updateOrderStatus,
+};

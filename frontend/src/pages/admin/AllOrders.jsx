@@ -22,17 +22,23 @@ const AdminOrdersPage = () => {
     fetchOrders();
   }, []);
 
-  const handleStatusChange = async (statusType, value) => {
+  const handleUpdateStatus = async () => {
     if (!selectedOrder) return;
 
-    // Update the status
-    setUpdatedStatus((prevState) => ({
-      ...prevState,
-      [statusType]: value,
-    }));
-
     try {
-      // Assuming API endpoint to update order status
+      // Ensure valid values for orderStatus and paymentStatus
+      if (!updatedStatus.orderStatus || !updatedStatus.paymentStatus) {
+        alert("Please select both order and payment status.");
+        return;
+      }
+
+      // Adjust frontend status to match backend enum
+      const updatedStatusData = {
+        ...updatedStatus,
+        paymentStatus:
+          updatedStatus.paymentStatus === "Paid" ? "Completed" : "Pending", // Modify "Paid" to "Completed"
+      };
+
       const response = await fetch(
         `http://localhost:5000/api/orders/${selectedOrder._id}/update`,
         {
@@ -40,20 +46,27 @@ const AdminOrdersPage = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            [statusType]: value,
-          }),
+          body: JSON.stringify(updatedStatusData),
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to update status");
-      }
+      if (!response.ok) throw new Error("Failed to update status");
 
       const updatedOrder = await response.json();
-      setSelectedOrder(updatedOrder); // Update the order with the new status
+
+      // Update the orders list with the modified order
+      setSelectedOrder(updatedOrder);
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order._id === updatedOrder._id ? updatedOrder : order
+        )
+      );
+
+      // Clear status form
+      setUpdatedStatus({ orderStatus: "", paymentStatus: "" });
     } catch (error) {
       console.error("Error updating status:", error);
+      alert("Error updating status");
     }
   };
 
@@ -68,17 +81,6 @@ const AdminOrdersPage = () => {
       default:
         return "bg-gray-500 text-white";
     }
-  };
-
-  const handleAction = (action) => {
-    if (!selectedOrder) return;
-
-    let newStatus = selectedOrder.status;
-    if (action === "accept") newStatus = "Pending";
-    if (action === "reject") newStatus = "Cancelled";
-    if (action === "deliver") newStatus = "Delivered";
-
-    handleStatusChange("orderStatus", newStatus);
   };
 
   return (
@@ -117,7 +119,14 @@ const AdminOrdersPage = () => {
               <td>
                 <button
                   className="text-blue-600 underline"
-                  onClick={() => setSelectedOrder(order)}
+                  onClick={() => {
+                    setSelectedOrder(order);
+                    setUpdatedStatus({
+                      orderStatus: order.status,
+                      paymentStatus:
+                        order.paymentStatus === "Completed" ? "Paid" : "Unpaid", // Modify for frontend
+                    });
+                  }}
                 >
                   View
                 </button>
@@ -127,7 +136,6 @@ const AdminOrdersPage = () => {
         </tbody>
       </table>
 
-      {/* Order details section */}
       {selectedOrder && (
         <div className="bg-gray-50 p-4 rounded-lg shadow">
           <h3 className="text-xl font-semibold mb-2">Order Details</h3>
@@ -165,42 +173,27 @@ const AdminOrdersPage = () => {
             ))}
           </ul>
 
-          <h4 className="mt-4 font-semibold">Cart Totals</h4>
-          <p>Subtotal: ₹{selectedOrder.subtotal}</p>
-          <p>Shipping: ₹{selectedOrder.shippingCost}</p>
-          <p>Tax: ₹{selectedOrder.tax}</p>
-          <p>
-            <strong>Total: ₹{selectedOrder.totalAmount}</strong>
+          <p className="mt-4 font-semibold">
+            Total: ₹{selectedOrder.totalAmount}
           </p>
 
-          {/* Change Status Section */}
+          {/* Status Controls */}
           <div className="mt-6">
             <h3 className="font-semibold mb-2">
               Change Status for Order #{selectedOrder._id}
             </h3>
 
             <div className="mb-4">
-              <p>
-                <strong>Current Order Status:</strong>{" "}
-                {selectedOrder.status || "Not Set"}
-              </p>
-              <p>
-                <strong>Current Payment Status:</strong>{" "}
-                {selectedOrder.paymentStatus || "Not Set"}
-              </p>
-            </div>
-
-            {/* Order Status Dropdown */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Order Status
-              </label>
+              <label className="block text-sm font-medium">Order Status</label>
               <select
-                value={updatedStatus.orderStatus || selectedOrder.status}
+                value={updatedStatus.orderStatus}
                 onChange={(e) =>
-                  handleStatusChange("orderStatus", e.target.value)
+                  setUpdatedStatus((prev) => ({
+                    ...prev,
+                    orderStatus: e.target.value,
+                  }))
                 }
-                className="w-full p-2 border border-gray-300 rounded"
+                className="w-full p-2 border rounded"
               >
                 <option value="Pending">Pending</option>
                 <option value="Shipped">Shipped</option>
@@ -209,46 +202,31 @@ const AdminOrdersPage = () => {
               </select>
             </div>
 
-            {/* Payment Status Dropdown */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium">
                 Payment Status
               </label>
               <select
-                value={
-                  updatedStatus.paymentStatus || selectedOrder.paymentStatus
-                }
+                value={updatedStatus.paymentStatus}
                 onChange={(e) =>
-                  handleStatusChange("paymentStatus", e.target.value)
+                  setUpdatedStatus((prev) => ({
+                    ...prev,
+                    paymentStatus: e.target.value,
+                  }))
                 }
-                className="w-full p-2 border border-gray-300 rounded"
+                className="w-full p-2 border rounded"
               >
-                <option value="Unpaid">Unpaid</option>
-                <option value="Paid">Paid</option>
+                <option value="Pending">Pending</option>
+                <option value="Completed">Completed</option>
               </select>
             </div>
 
-            {/* Action Buttons */}
-            <div className="mt-4 flex gap-4">
-              <button
-                onClick={() => handleAction("accept")}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              >
-                Accept
-              </button>
-              <button
-                onClick={() => handleAction("reject")}
-                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-              >
-                Reject
-              </button>
-              <button
-                onClick={() => handleAction("deliver")}
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-              >
-                Deliver
-              </button>
-            </div>
+            <button
+              onClick={handleUpdateStatus}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Update Status
+            </button>
           </div>
         </div>
       )}
