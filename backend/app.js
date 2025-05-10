@@ -17,6 +17,7 @@ app.use(express.json());
 
 // Enable CORS
 app.use(cors());
+
 // Set static folder for uploads
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 // Define Routes

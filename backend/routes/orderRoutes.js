@@ -1,17 +1,19 @@
 const express = require("express");
+const router = express.Router();
 const {
   createOrder,
   getUserOrders,
+  getAllOrders,
+  updateOrderStatus,
 } = require("../controllers/orderController");
+
 const protect = require("../middleware/authMiddleware");
-const { getAllOrders } = require("../controllers/orderController");
-const { updateOrderStatus } = require("../controllers/orderController");
+const { verifyEsewaPayment } = require("../controllers/orderController");
 
-const router = express.Router();
-
+router.post("/verify", verifyEsewaPayment);
 router.post("/", protect, createOrder);
 router.get("/my-orders", protect, getUserOrders);
-router.patch("/:orderId/update", updateOrderStatus);
 router.get("/admin", getAllOrders);
+router.patch("/:orderId/update", protect, updateOrderStatus);
 
 module.exports = router;

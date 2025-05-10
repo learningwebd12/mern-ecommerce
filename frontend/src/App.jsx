@@ -17,13 +17,14 @@ import AddCategory from "./pages/admin/AddCategory";
 import AllProduct from "./components/AllProduct";
 import Product from "./components/SingleProduct";
 import Checkout from "./pages/Checkout";
+import PaymentSuccess from "./pages/PaymentSuccess";
 import OrderSuccess from "./pages/OrderSuccess";
 import MyOrders from "./pages/MyOrders";
 import AllOrders from "./pages/admin/AllOrders";
-import Dashboard from "./pages/Dashboard"; 
+import Dashboard from "./pages/Dashboard";
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
-import AdminLayout from "./components/AdminLayout"; 
+import AdminLayout from "./components/AdminLayout";
 
 const PublicLayout = ({ children }) => {
   const location = useLocation();
@@ -55,6 +56,7 @@ function App() {
               <Route path="/product/:id" element={<Product />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/order-success" element={<OrderSuccess />} />
+              <Route path="/PaymentSuccess" element={<PaymentSuccess />} />
               <Route path="/my-orders" element={<MyOrders />} />
 
               {/* Admin Layout Routes */}

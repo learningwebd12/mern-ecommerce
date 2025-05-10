@@ -1,52 +1,59 @@
 const mongoose = require("mongoose");
 
-const orderSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  items: [
-    {
-      name: { type: String, required: true },
-      productId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Product",
-        required: true,
-      },
-      quantity: { type: Number, required: true },
-      price: { type: Number, required: true },
+const orderSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-  ],
-  totalAmount: { type: Number, required: true },
-  shippingAddress: {
-    fullName: { type: String, required: true },
-    email: { type: String, required: true },
-    phone: { type: String, required: true },
-    address: { type: String, required: true },
-    city: { type: String, required: true },
-    state: { type: String, required: true },
-    zipCode: { type: String, required: true },
+    items: [
+      {
+        productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+        quantity: Number,
+        price: Number,
+      },
+    ],
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
+    shippingAddress: {
+      fullName: String,
+      email: String,
+      phone: String,
+      address: String,
+      city: String,
+      state: String,
+      zipCode: String,
+    },
+    paymentMethod: {
+      type: String,
+      enum: ["Esewa", "CashOnDelivery", "Khalti", "Card"], // Add all valid options here
+      required: true,
+    },
+    transaction_uuid: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["Unpaid", "Paid"],
+      default: "Unpaid",
+    },
+    status: {
+      type: String,
+      enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"],
+      default: "Pending",
+    },
+    paymentVerified: {
+      type: Boolean,
+      default: false,
+    },
+    paymentVerifiedAt: Date,
   },
-  paymentMethod: {
-    type: String,
-    enum: ["Esewa", "CashOnDelivery"],
-    required: true,
-  },
-  paymentStatus: {
-    type: String,
-    enum: ["Pending", "Completed", "Failed"],
-    default: "Pending",
-  },
-  paymentTransactionId: {
-    type: String,
-  },
-  status: {
-    type: String,
-    enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"],
-    default: "Pending",
-  },
-  createdAt: { type: Date, default: Date.now },
-});
+  { timestamps: true }
+);
 
 module.exports = mongoose.model("Order", orderSchema);

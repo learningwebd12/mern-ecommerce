@@ -9,6 +9,7 @@ const Checkout = () => {
   const { cart, clearCart } = useCart();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const [form, setForm] = useState({
     fullName: "",
@@ -36,6 +37,27 @@ const Checkout = () => {
       return navigate("/login");
     }
 
+    // Basic form validation
+    for (const field of [
+      "fullName",
+      "email",
+      "phone",
+      "address",
+      "city",
+      "state",
+      "zipCode",
+    ]) {
+      if (!form[field].trim()) {
+        alert(
+          `Please fill in your ${field
+            .replace(/([A-Z])/g, " $1")
+            .toLowerCase()}`
+        );
+        return;
+      }
+    }
+
+    setIsProcessing(true);
     const transaction_uuid = uuidv4();
     const orderData = {
       items: cart.map((item) => ({
@@ -86,7 +108,18 @@ const Checkout = () => {
               }),
             }
           );
+
+          if (!signatureRes.ok) {
+            throw new Error("Failed to get payment signature");
+          }
+
           const { signature } = await signatureRes.json();
+
+          // Show "Redirecting, Please Wait!" message here
+          setIsProcessing(false);
+          alert(
+            "Your payment is being processed. Please do not refresh the page."
+          );
 
           // Create and submit eSewa payment form
           const paymentForm = document.createElement("form");
@@ -102,6 +135,9 @@ const Checkout = () => {
             paymentForm.appendChild(input);
           };
 
+          const successUrl = "http://localhost:5173/PaymentSuccess";
+          const failureUrl = "http://localhost:5173/PaymentFail";
+
           addField("amount", totalAmount);
           addField("tax_amount", 0);
           addField("total_amount", totalAmount);
@@ -109,8 +145,8 @@ const Checkout = () => {
           addField("product_code", product_code);
           addField("product_service_charge", 0);
           addField("product_delivery_charge", 0);
-          addField("success_url", "http://localhost:3000/success");
-          addField("failure_url", "http://localhost:3000/fail");
+          addField("success_url", successUrl);
+          addField("failure_url", failureUrl);
           addField(
             "signed_field_names",
             "total_amount,transaction_uuid,product_code"
@@ -119,56 +155,137 @@ const Checkout = () => {
 
           document.body.appendChild(paymentForm);
           paymentForm.submit();
+        } else if (form.paymentMethod === "Khalti") {
+          navigate("/order-success");
         } else {
           navigate("/order-success");
         }
       } else {
+        setIsProcessing(false);
         alert("Failed to place order: " + data.message);
       }
     } catch (err) {
       console.error(err);
-      alert("Error placing order.");
+      setIsProcessing(false);
+      alert("Error placing order: " + err.message);
     }
   };
+
+  if (cart.length === 0) {
+    return (
+      <div className="max-w-xl mx-auto p-6 text-center">
+        <h2 className="text-2xl font-semibold mb-4">Your cart is empty</h2>
+        <p className="mb-4">Add some items to your cart before checking out.</p>
+        <button
+          onClick={() => navigate("/")}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Continue Shopping
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-xl mx-auto p-6">
       <h2 className="text-2xl font-semibold mb-4">Checkout</h2>
 
-      {[
-        "fullName",
-        "email",
-        "phone",
-        "address",
-        "city",
-        "state",
-        "zipCode",
-      ].map((field) => (
-        <input
-          key={field}
-          name={field}
-          type={
-            field === "email" ? "email" : field === "phone" ? "tel" : "text"
-          }
-          value={form[field]}
-          onChange={handleChange}
-          placeholder={field.replace(/([A-Z])/g, " $1")}
-          className="block w-full p-2 mb-2 border"
-          required
-        />
-      ))}
+      <div className="mb-6">
+        <h3 className="text-lg font-medium mb-2">Shipping Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm mb-1">Full Name</label>
+            <input
+              name="fullName"
+              type="text"
+              value={form.fullName}
+              onChange={handleChange}
+              className="block w-full p-2 border rounded"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Email</label>
+            <input
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              className="block w-full p-2 border rounded"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Phone</label>
+            <input
+              name="phone"
+              type="tel"
+              value={form.phone}
+              onChange={handleChange}
+              className="block w-full p-2 border rounded"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Address</label>
+            <input
+              name="address"
+              type="text"
+              value={form.address}
+              onChange={handleChange}
+              className="block w-full p-2 border rounded"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">City</label>
+            <input
+              name="city"
+              type="text"
+              value={form.city}
+              onChange={handleChange}
+              className="block w-full p-2 border rounded"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">State</label>
+            <input
+              name="state"
+              type="text"
+              value={form.state}
+              onChange={handleChange}
+              className="block w-full p-2 border rounded"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">ZIP Code</label>
+            <input
+              name="zipCode"
+              type="text"
+              value={form.zipCode}
+              onChange={handleChange}
+              className="block w-full p-2 border rounded"
+              required
+            />
+          </div>
+        </div>
+      </div>
 
-      <label className="block mb-2">Payment Method:</label>
-      <select
-        name="paymentMethod"
-        value={form.paymentMethod}
-        onChange={handleChange}
-        className="block w-full p-2 border mb-4"
-      >
-        <option value="Esewa">Esewa</option>
-        <option value="Khalti">Khalti</option>
-        <option value="CashOnDelivery">Cash on Delivery</option>
-      </select>
+      <div className="mb-6">
+        <h3 className="text-lg font-medium mb-2">Payment Method</h3>
+        <select
+          name="paymentMethod"
+          value={form.paymentMethod}
+          onChange={handleChange}
+          className="block w-full p-2 border rounded"
+        >
+          <option value="Esewa">Esewa</option>
+          <option value="Khalti">Khalti</option>
+          <option value="CashOnDelivery">Cash on Delivery</option>
+        </select>
+      </div>
 
       <div className="mt-4 p-4 bg-gray-100 rounded">
         <h3 className="font-semibold mb-2">Order Summary</h3>
@@ -188,10 +305,10 @@ const Checkout = () => {
 
       <button
         onClick={handlePlaceOrder}
-        className="w-full mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        disabled={!cart.length}
+        className="w-full mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-400"
+        disabled={isProcessing || !cart.length}
       >
-        Place Order
+        {isProcessing ? "Processing..." : "Place Order"}
       </button>
     </div>
   );
