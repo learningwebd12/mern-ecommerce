@@ -7,6 +7,6 @@ const {
 const router = express.Router();
 
 router.post("/signature", generateSignature);
-router.post("/verify", verifyEsewaPayment);
+router.post("/verify-esewa", verifyEsewaPayment);
 
 module.exports = router;

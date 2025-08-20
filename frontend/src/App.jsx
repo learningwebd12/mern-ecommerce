@@ -19,6 +19,7 @@ import Product from "./components/SingleProduct";
 import Checkout from "./pages/Checkout";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import OrderSuccess from "./pages/OrderSuccess";
+import PaymentFail from "./pages/PaymentFail";
 import MyOrders from "./pages/MyOrders";
 import AllOrders from "./pages/admin/AllOrders";
 import Dashboard from "./pages/Dashboard";
@@ -57,6 +58,8 @@ function App() {
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/order-success" element={<OrderSuccess />} />
               <Route path="/PaymentSuccess" element={<PaymentSuccess />} />
+              <Route path="/Payment-fail" element={<PaymentFail />} />
+
               <Route path="/my-orders" element={<MyOrders />} />
 
               {/* Admin Layout Routes */}

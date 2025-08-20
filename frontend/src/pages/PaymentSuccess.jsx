@@ -1,67 +1,83 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import axios from "axios";
+import { useCart } from "../context/CartContext";
 
 const PaymentSuccess = () => {
   const location = useLocation();
-  const [paymentStatus, setPaymentStatus] = useState(null);
-  const [totalAmount, setTotalAmount] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(null);
+  const { clearCart } = useCart();
+
+  const [data, setData] = useState(null);
+  const [status, setStatus] = useState("Verifying payment...");
 
   useEffect(() => {
-    const query = new URLSearchParams(location.search);
-    const status = query.get("status");
-    const transaction_uuid = query.get("transaction_uuid");
-    const total_amount = query.get("total_amount");
-    const product_code = query.get("product_code");
-    const transaction_code = query.get("transaction_code");
+    const verifyPayment = async () => {
+      try {
+        const queryParams = new URLSearchParams(location.search);
+        const encodedData = queryParams.get("data");
 
-    if (
-      status === "COMPLETE" &&
-      transaction_uuid &&
-      product_code &&
-      total_amount
-    ) {
-      verifyEsewaPayment({
-        status,
-        transaction_uuid,
-        total_amount,
-        product_code,
-        transaction_code,
-      });
-    }
-  }, [location]);
+        if (!encodedData) {
+          setStatus("No payment data received.");
+          return;
+        }
 
-  const verifyEsewaPayment = async (data) => {
-    try {
-      const res = await axios.post("/api/orders/verify-esewa", data);
-      console.log("Payment Verified:", res.data);
+        const jsonData = JSON.parse(atob(encodedData));
+        setData(jsonData);
 
-      setPaymentStatus("success");
-      setTotalAmount(res.data.order.totalAmount); // Display the price
-    } catch (err) {
-      console.error("Verification Failed:", err.response?.data || err.message);
-      setPaymentStatus("failed");
-      setErrorMessage("Payment verification failed. Please try again.");
-    }
-  };
+        if (jsonData.status === "COMPLETE") {
+          setStatus("✅ Payment successful!");
+
+          // 🔄 Call backend to verify payment and update order
+          const response = await fetch("/api/payment/verify-esewa", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              amount: jsonData.total_amount,
+              refId: jsonData.transaction_uuid,
+            }),
+          });
+
+          const resData = await response.json();
+
+          if (response.ok) {
+            clearCart(); // ✅ Clear cart if payment verified
+          } else {
+            setStatus(`⚠️ Verification failed: ${resData.message}`);
+          }
+        } else {
+          setStatus("❌ Payment failed or cancelled.");
+        }
+      } catch (error) {
+        console.error("Payment verification error:", error);
+        setStatus("⚠️ Error verifying payment.");
+      }
+    };
+
+    verifyPayment();
+  }, [location.search, clearCart]);
 
   return (
-    <div className="payment-success">
-      <h1>
-        {paymentStatus === "success"
-          ? "Payment Successful!"
-          : "Verifying Payment..."}
-      </h1>
-      {paymentStatus === "success" && (
-        <>
+    <div style={{ padding: "2rem" }}>
+      <h1>eSewa Payment Status</h1>
+      <p>{status}</p>
+
+      {data && (
+        <div style={{ marginTop: "1rem" }}>
           <p>
-            Your payment of NPR {totalAmount} has been successfully verified.
+            <strong>Transaction Code:</strong> {data.transaction_code}
           </p>
-          <p>Thank you for your purchase!</p>
-        </>
+          <p>
+            <strong>Amount:</strong> ₹{data.total_amount}
+          </p>
+          <p>
+            <strong>Status:</strong> {data.status}
+          </p>
+          <p>
+            <strong>Transaction UUID:</strong> {data.transaction_uuid}
+          </p>
+        </div>
       )}
-      {paymentStatus === "failed" && <p>{errorMessage}</p>}
     </div>
   );
 };

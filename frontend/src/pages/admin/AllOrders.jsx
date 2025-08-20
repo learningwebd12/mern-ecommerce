@@ -32,11 +32,10 @@ const AdminOrdersPage = () => {
         return;
       }
 
-      // Adjust frontend status to match backend enum
+      // No need to modify status values on frontend as they are directly sent to backend
       const updatedStatusData = {
-        ...updatedStatus,
-        paymentStatus:
-          updatedStatus.paymentStatus === "Paid" ? "Completed" : "Pending", // Modify "Paid" to "Completed"
+        orderStatus: updatedStatus.orderStatus,
+        paymentStatus: updatedStatus.paymentStatus, // Directly send "Paid" or "Unpaid"
       };
 
       const response = await fetch(
@@ -114,7 +113,7 @@ const AdminOrdersPage = () => {
                   {order.status}
                 </span>
               </td>
-              <td>{order.paymentMethod}</td>
+              <td>{order.paymentStatus}</td>
               <td>{new Date(order.createdAt).toLocaleDateString()}</td>
               <td>
                 <button
@@ -123,8 +122,7 @@ const AdminOrdersPage = () => {
                     setSelectedOrder(order);
                     setUpdatedStatus({
                       orderStatus: order.status,
-                      paymentStatus:
-                        order.paymentStatus === "Completed" ? "Paid" : "Unpaid", // Modify for frontend
+                      paymentStatus: order.paymentStatus, // Use "Paid" or "Unpaid"
                     });
                   }}
                 >
@@ -216,8 +214,8 @@ const AdminOrdersPage = () => {
                 }
                 className="w-full p-2 border rounded"
               >
-                <option value="Pending">Pending</option>
-                <option value="Completed">Completed</option>
+                <option value="Unpaid">Unpaid</option>
+                <option value="Paid">Paid</option>
               </select>
             </div>
 

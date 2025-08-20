@@ -1,4 +1,3 @@
-// src/pages/Checkout.jsx
 import React, { useState } from "react";
 import { useCart } from "../context/CartContext";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { v4 as uuidv4 } from "uuid";
 
 const Checkout = () => {
-  const { cart, clearCart } = useCart();
+  const { cart } = useCart();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -37,7 +36,6 @@ const Checkout = () => {
       return navigate("/login");
     }
 
-    // Basic form validation
     for (const field of [
       "fullName",
       "email",
@@ -58,10 +56,11 @@ const Checkout = () => {
     }
 
     setIsProcessing(true);
-    const transaction_uuid = uuidv4();
+    const transaction_uuid = uuidv4(); // Generate unique transaction UUID
+    console.log("Transaction UUID:", transaction_uuid); // Debugging log
+
     const orderData = {
       items: cart.map((item) => ({
-        name: item.name,
         productId: item._id,
         quantity: item.quantity,
         price: item.price,
@@ -77,8 +76,10 @@ const Checkout = () => {
         zipCode: form.zipCode,
       },
       paymentMethod: form.paymentMethod,
-      transaction_uuid,
+      transaction_uuid, // Ensure it's passed in the request
     };
+
+    console.log("Order Data:", orderData); // Debugging log
 
     try {
       const res = await fetch("http://localhost:5000/api/orders", {
@@ -92,83 +93,80 @@ const Checkout = () => {
 
       const data = await res.json();
       if (res.ok) {
-        clearCart();
-
         if (form.paymentMethod === "Esewa") {
-          const product_code = "EPAYTEST";
-          const signatureRes = await fetch(
-            "http://localhost:5000/api/esewa/signature",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                total_amount: totalAmount,
-                transaction_uuid,
-                product_code,
-              }),
-            }
-          );
-
-          if (!signatureRes.ok) {
-            throw new Error("Failed to get payment signature");
-          }
-
-          const { signature } = await signatureRes.json();
-
-          // Show "Redirecting, Please Wait!" message here
-          setIsProcessing(false);
-          alert(
-            "Your payment is being processed. Please do not refresh the page."
-          );
-
-          // Create and submit eSewa payment form
-          const paymentForm = document.createElement("form");
-          paymentForm.method = "POST";
-          paymentForm.action =
-            "https://rc-epay.esewa.com.np/api/epay/main/v2/form";
-
-          const addField = (name, value) => {
-            const input = document.createElement("input");
-            input.type = "hidden";
-            input.name = name;
-            input.value = value;
-            paymentForm.appendChild(input);
-          };
-
-          const successUrl = "http://localhost:5173/PaymentSuccess";
-          const failureUrl = "http://localhost:5173/PaymentFail";
-
-          addField("amount", totalAmount);
-          addField("tax_amount", 0);
-          addField("total_amount", totalAmount);
-          addField("transaction_uuid", transaction_uuid);
-          addField("product_code", product_code);
-          addField("product_service_charge", 0);
-          addField("product_delivery_charge", 0);
-          addField("success_url", successUrl);
-          addField("failure_url", failureUrl);
-          addField(
-            "signed_field_names",
-            "total_amount,transaction_uuid,product_code"
-          );
-          addField("signature", signature);
-
-          document.body.appendChild(paymentForm);
-          paymentForm.submit();
-        } else if (form.paymentMethod === "Khalti") {
-          navigate("/order-success");
-        } else {
-          navigate("/order-success");
+          await processEsewaPayment(transaction_uuid);
+        } else if (form.paymentMethod === "CashOnDelivery") {
+          navigate("/PaymentSuccess");
         }
       } else {
         setIsProcessing(false);
-        alert("Failed to place order: " + data.message);
+        alert(
+          "Failed to place order: " +
+            (data.message || "An unknown error occurred")
+        );
       }
     } catch (err) {
       console.error(err);
       setIsProcessing(false);
       alert("Error placing order: " + err.message);
     }
+  };
+
+  const processEsewaPayment = async (transaction_uuid) => {
+    const product_code = "EPAYTEST"; // Your test product code
+    const signatureRes = await fetch(
+      "http://localhost:5000/api/esewa/signature",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          total_amount: totalAmount,
+          transaction_uuid,
+          product_code,
+        }),
+      }
+    );
+
+    if (!signatureRes.ok) {
+      throw new Error("Failed to get payment signature");
+    }
+
+    const { signature } = await signatureRes.json();
+    setIsProcessing(false);
+    alert("Your payment is being processed. Please do not refresh the page.");
+
+    const paymentForm = document.createElement("form");
+    paymentForm.method = "POST";
+    paymentForm.action = "https://rc-epay.esewa.com.np/api/epay/main/v2/form";
+
+    const addField = (name, value) => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = name;
+      input.value = value;
+      paymentForm.appendChild(input);
+    };
+
+    const successUrl = "http://localhost:5173/PaymentSuccess";
+    const failureUrl = "http://localhost:5173/PaymentFail";
+
+    addField("amount", totalAmount);
+    addField("tax_amount", 0);
+    addField("total_amount", totalAmount);
+    addField("transaction_uuid", transaction_uuid);
+    addField("product_code", product_code);
+    addField("product_service_charge", 0);
+    addField("product_delivery_charge", 0);
+    addField("success_url", successUrl);
+    addField("failure_url", failureUrl);
+    addField(
+      "signed_field_names",
+      "total_amount,transaction_uuid,product_code"
+    );
+    addField("signature", signature);
+
+    document.body.appendChild(paymentForm);
+    paymentForm.submit();
   };
 
   if (cart.length === 0) {
@@ -193,83 +191,27 @@ const Checkout = () => {
       <div className="mb-6">
         <h3 className="text-lg font-medium mb-2">Shipping Information</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm mb-1">Full Name</label>
-            <input
-              name="fullName"
-              type="text"
-              value={form.fullName}
-              onChange={handleChange}
-              className="block w-full p-2 border rounded"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Email</label>
-            <input
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              className="block w-full p-2 border rounded"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Phone</label>
-            <input
-              name="phone"
-              type="tel"
-              value={form.phone}
-              onChange={handleChange}
-              className="block w-full p-2 border rounded"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Address</label>
-            <input
-              name="address"
-              type="text"
-              value={form.address}
-              onChange={handleChange}
-              className="block w-full p-2 border rounded"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm mb-1">City</label>
-            <input
-              name="city"
-              type="text"
-              value={form.city}
-              onChange={handleChange}
-              className="block w-full p-2 border rounded"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm mb-1">State</label>
-            <input
-              name="state"
-              type="text"
-              value={form.state}
-              onChange={handleChange}
-              className="block w-full p-2 border rounded"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm mb-1">ZIP Code</label>
-            <input
-              name="zipCode"
-              type="text"
-              value={form.zipCode}
-              onChange={handleChange}
-              className="block w-full p-2 border rounded"
-              required
-            />
-          </div>
+          {[
+            { label: "Full Name", name: "fullName" },
+            { label: "Email", name: "email", type: "email" },
+            { label: "Phone", name: "phone", type: "tel" },
+            { label: "Address", name: "address" },
+            { label: "City", name: "city" },
+            { label: "State", name: "state" },
+            { label: "ZIP Code", name: "zipCode" },
+          ].map(({ label, name, type = "text" }) => (
+            <div key={name}>
+              <label className="block text-sm mb-1">{label}</label>
+              <input
+                name={name}
+                type={type}
+                value={form[name]}
+                onChange={handleChange}
+                className="block w-full p-2 border rounded"
+                required
+              />
+            </div>
+          ))}
         </div>
       </div>
 
@@ -282,7 +224,6 @@ const Checkout = () => {
           className="block w-full p-2 border rounded"
         >
           <option value="Esewa">Esewa</option>
-          <option value="Khalti">Khalti</option>
           <option value="CashOnDelivery">Cash on Delivery</option>
         </select>
       </div>

@@ -5,15 +5,14 @@ const {
   getUserOrders,
   getAllOrders,
   updateOrderStatus,
+  verifyEsewaPayment, // Ensure it's imported
 } = require("../controllers/orderController");
 
 const protect = require("../middleware/authMiddleware");
-const { verifyEsewaPayment } = require("../controllers/orderController");
 
-router.post("/verify", verifyEsewaPayment);
-router.post("/", protect, createOrder);
-router.get("/my-orders", protect, getUserOrders);
-router.get("/admin", getAllOrders);
-router.patch("/:orderId/update", protect, updateOrderStatus);
+router.post("/", protect, createOrder); // Create order
+router.get("/my-orders", protect, getUserOrders); // Get user's orders
+router.get("/admin", getAllOrders); // Get all orders (admin)
+router.patch("/:orderId/update", protect, updateOrderStatus); // Update order status
 
 module.exports = router;

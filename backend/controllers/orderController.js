@@ -20,7 +20,7 @@ const createOrder = async (req, res) => {
       return res.status(400).json({ message: "Incomplete shipping details" });
     }
 
-    // ✅ Generate a UUID for transaction
+    // Generate UUID for transaction
     const transaction_uuid = uuidv4();
 
     const newOrder = new Order({
@@ -41,7 +41,7 @@ const createOrder = async (req, res) => {
       signature = generateEsewaSignature({
         total_amount: totalAmount,
         transaction_uuid,
-        product_code: "EPAYTEST", // Replace with actual product code in production
+        product_code: process.env.ESEWA_PRODUCT_CODE,
       });
     }
 
@@ -81,66 +81,21 @@ const getAllOrders = async (req, res) => {
 
 const updateOrderStatus = async (req, res) => {
   try {
-    const { orderId } = req.params;
+    const { id } = req.params;
     const { orderStatus, paymentStatus } = req.body;
 
-    const order = await Order.findById(orderId);
+    const order = await Order.findById(id);
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    if (orderStatus) order.status = orderStatus;
-    if (paymentStatus) order.paymentStatus = paymentStatus;
-
+    order.status = orderStatus;
+    order.paymentStatus = paymentStatus;
+    order.paymentVerified = paymentStatus === "Paid";
     await order.save();
-    res.status(200).json(order);
+
+    res.json(order);
   } catch (error) {
     console.error("Error updating order status:", error);
-    res.status(500).json({ message: "Failed to update order status" });
-  }
-};
-
-const verifyEsewaPayment = async (req, res) => {
-  try {
-    const {
-      transaction_uuid,
-      total_amount,
-      product_code,
-      transaction_code,
-      status,
-    } = req.body;
-
-    // Validate required fields
-    if (
-      !transaction_uuid ||
-      !total_amount ||
-      !product_code ||
-      status !== "COMPLETE"
-    ) {
-      return res.status(400).json({
-        message: "Missing or invalid payment verification data",
-      });
-    }
-
-    const order = await Order.findOne({ transaction_uuid });
-    if (!order) return res.status(404).json({ message: "Order not found" });
-
-    // Optionally match the amount to prevent fraud
-    if (order.totalAmount !== Number(total_amount)) {
-      return res
-        .status(400)
-        .json({ message: "Payment amount mismatch with order total" });
-    }
-
-    order.paymentStatus = "Paid";
-    order.paymentVerified = true;
-    order.paymentVerifiedAt = new Date();
-    if (transaction_code) order.transaction_code = transaction_code; // Optional field
-
-    await order.save();
-
-    res.status(200).json({ message: "Payment verified", order });
-  } catch (err) {
-    console.error("Payment verification failed:", err);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -149,5 +104,4 @@ module.exports = {
   getUserOrders,
   getAllOrders,
   updateOrderStatus,
-  verifyEsewaPayment,
 };
